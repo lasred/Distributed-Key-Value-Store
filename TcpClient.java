@@ -11,24 +11,31 @@ public class TcpClient {
       try {
          String sCurrentLine;
          System.out.println("Connecting to " + serverName + " on port " + port);
+         //Socket - provides communication mechanism between two computers over TCP
+         //TCP - two way communicatio protocold
+         //Socket constructor tries to connect to client via server name and port 
          Socket client = new Socket(serverName, port);
          
          System.out.println("Just connected to " + client.getRemoteSocketAddress());
          OutputStream outToServer = client.getOutputStream();
-         DataOutputStream out = new DataOutputStream(outToServer);
+         //This is what im talking about. Nobody fucks with the printwriter
+         PrintWriter out = new PrintWriter(outToServer);
          //The client should read commands from a script that contains 
          //at least 50 distinct GET/PUT/DELETE transactions on key-value pairs.
          BufferedReader transactionReader = 
              new BufferedReader(new FileReader(new File("transactions.txt")));
          while ((sCurrentLine = transactionReader.readLine()) != null) {
-            System.out.println(sCurrentLine);
-            out.writeUTF(sCurrentLine);
+            System.out.println("Requested Operation to Server: " + sCurrentLine);
+            out.println(sCurrentLine);
          }
-
-         InputStream inFromServer = client.getInputStream();
-         DataInputStream in = new DataInputStream(inFromServer);
-         
-         System.out.println("Server says " + in.readUTF());
+         //working it out. ITs all in a cache, and we need to flush its ass out.
+         out.flush();
+         BufferedReader in = new BufferedReader(
+                   new InputStreamReader(new DataInputStream(client.getInputStream())));
+         String cLine = null;
+         while((cLine = in.readLine()) != null) {
+            System.out.println(cLine);
+         }
          client.close();
       }catch(IOException e) {
          e.printStackTrace();
